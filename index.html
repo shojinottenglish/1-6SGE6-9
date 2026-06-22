@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1-6 Special EnGra 6-9</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .fade-in { animation: fadeIn 0.4s ease-in-out; }
+    .slide-in { animation: slideIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 selection:bg-blue-200 selection:text-blue-900 min-h-screen">
+  
+  <div id="app" class="h-full min-h-screen"></div>
+
+  <script>
+    // --- 英語が苦手な生徒向けの丁寧な解説と作問者の意図（グループ化） ---
+    const conceptGroups = {
+      "T-perf": { 
+        title: "📌 現在完了形・過去完了形", 
+        e: "「継続・経験・完了」などの意味を表します。過去完了は「過去のある時点よりさらに前」の事を表す際に用います。", 
+        m: "完了形の基本的な用法と時制の一致を理解しているか問うています。" 
+      },
+      "T-prog": { 
+        title: "📌 進行形・完了進行形", 
+        e: "動作が「進行中」であることを強調します。完了進行形は「過去から現在（または過去のある時点）までずっと続いている」動作を表します。", 
+        m: "進行形や完了進行形の形と意味を正しく作れるかを問うています。" 
+      },
+      "T-basic": { 
+        title: "📌 時制の基本（現在・過去・未来）", 
+        e: "文中の「yesterday」や「tomorrow」などの時を表す言葉に注目して、適切な時制（現在、過去、未来）を選びます。", 
+        m: "時を表す副詞（句）と時制の呼応を理解しているかを問うています。" 
+      },
+      "A-can": { 
+        title: "📌 助動詞 can / could / be able to", 
+        e: "「～できる（能力）」「～してもよい（許可）」「～ありうる（可能性）」などを表します。過去の能力は could や was/were able to を使います。", 
+        m: "can の様々な用法や、be able to との書き換えを理解しているかを問うています。" 
+      },
+      "A-may": { 
+        title: "📌 助動詞 may / might", 
+        e: "「～してもよい（許可）」「～かもしれない（推量）」を表します。may I ~ ? で「～してもいいですか」と許可を求めます。", 
+        m: "may の持つ許可と推量の意味を正確に使い分けられるかを問うています。" 
+      },
+      "A-must": { 
+        title: "📌 助動詞 must / have to", 
+        e: "「～しなければならない（義務）」「～に違いない（強い推量）」を表します。否定の don't have to は「～する必要はない」という意味になります。", 
+        m: "must と have to の肯定・否定での意味の違いを理解しているかを問うています。" 
+      },
+      "A-should": { 
+        title: "📌 助動詞 should / ought to", 
+        e: "「～すべきだ（義務・助言）」「～するはずだ（当然）」を表します。ought to は should とほぼ同じ意味で使われます。", 
+        m: "should と ought to の用法、および ought not to などの語順を問うています。" 
+      },
+      "A-will": { 
+        title: "📌 助動詞 will / would", 
+        e: "「～だろう（予測）」「～するつもりだ（意志）」に加え、Would you ~ ? で丁寧な依頼を表します。また would often は「よく～したものだ（過去の習慣）」を表します。", 
+        m: "will / would の多様な用法や、過去の習慣を表す表現を理解しているかを問うています。" 
+      },
+      "A-idiom": { 
+        title: "📌 助動詞の重要表現", 
+        e: "had better (not) do「～した方がよい（しない方がよい）」、used to do「以前は～だった（今は違う）」などの決まり文句です。", 
+        m: "助動詞を含む慣用表現の意味と正しい形を作れるかを問うています。" 
+      },
+      "Review": { 
+        title: "📌 総合復習", 
+        e: "時制や助動詞などの知識を総合的に問う問題です。文全体の意味や、時を表す副詞句からヒントを見つけましょう。", 
+        m: "これまでの学習内容が定着しているかを確認しています。" 
+      }
+    };
+
+    // --- 全範囲網羅・重複カット 厳選データ ---
+    // ID|カテゴリ|タイプ|問題文|選択肢|正解|個別解説|グループID
+    const rawData = `
+L6-01|Lesson 6|c|I have (　　　) heard the news.|just^yet^still^ever|1|肯定文で「ちょうど～した」を表す現在完了形には just を用います。|T-perf
+L6-02|Lesson 6|c|I have (　　　) my cell phone.|lose^lost^losing^to lose|2|現在完了形は have + 過去分詞 (lost) で表します。|T-perf
+L6-03|Lesson 6|c|I have met Judy's brother (　　　).|two^second^twice^double|3|「2回」という経験を表す副詞 twice を用います。|T-perf
+L6-04|Lesson 6|c|She has lived in Paris (　　　) three years.|during^for^since^in|2|期間（～の間）を表す場合は for を用います。|T-perf
+L6-05|Lesson 6|c|He has (　　　) watching TV since this morning.|be^been^being^was|2|現在完了進行形は have been doing の形になります。|T-prog
+L6-06|Lesson 6|c|I haven't seen him (　　　).|lately^recent^nowadays^just|1|否定文で「最近」を表す副詞 lately を用います。|T-perf
+L6-07|Lesson 6|c|I received a letter from him six months (　　　).|before^since^ago^past|3|過去形(received)の文で「～前」を表す ago を用います。|T-basic
+L6-08|Lesson 6|c|The welcome party has (　　　) started.|just^yet^still^ever|1|完了を表す肯定文には just（ちょうど）が適しています。|T-perf
+L6-09|Lesson 6|c|I've (　　　) seen such a strange animal.|never^ever^not^always|1|経験の否定「一度も～ない」は never を用います。|T-perf
+L6-10|Lesson 6|c|Ken and Jenny have known each other (　　　) last year.|from^since^for^in|2|「～以来ずっと」という起点を表す場合は since を用います。|T-perf
+L6-11|Lesson 6|c|I haven't finished reading the magazine (　　　).|already^just^yet^still|3|否定文で「まだ（～ない）」を表す yet を文末に置きます。|T-perf
+L6-12|Lesson 6|c|How (　　　) have you wanted to be a pilot?|long^much^many^far|1|期間を尋ねる「どのくらい長く」は How long です。|T-perf
+L6-13|Lesson 6|c|Mayu has (　　　) to Singapore many times.|gone^been^visited^arrived|2|「～へ行ったことがある」は have been to を用います。|T-perf
+L6-14|Lesson 6|c|It has been (　　　) since last night.|rain^rained^raining^to rain|3|現在完了進行形 (have been doing) の形にします。|T-prog
+L6-15|Lesson 6|c|The city bus has never (　　　) late.|be^been^being^was|2|be動詞の過去分詞である been が入ります。|T-perf
+L6-16|Lesson 6|c|She has been (　　　) in her room since this morning.|study^studied^studying^to study|3|現在完了進行形 (have been doing) の形にします。|T-prog
+L6-17|Lesson 6|c|I have (　　　) in Kyoto for five years.|live^living^lived^to live|3|現在完了形なので過去分詞の lived が入ります。|T-perf
+L6-18|Lesson 6|c|The train has (　　　) left the station.|already^yet^still^ever|1|肯定文で「すでに」を表す already が適しています。|T-perf
+L6-19|Lesson 6|c|I (　　　) Nagasaki last year.|visit^visited^have visited^had visited|2|last yearという過去の1点を示す言葉があるので過去形にします。|T-basic
+L6-20|Lesson 6|c|My father has (　　　) tired lately.|be^been^being^to be|2|現在完了形（継続）で be動詞の過去分詞 been が入ります。|T-perf
+L6-21|Lesson 6|c|Where has Mr. Tamura (　　　) since yesterday?|be^been^being^gone|2|「どこにいるか（ずっといるか）」は have been で表します。|T-perf
+L6-22|Lesson 6|c|Did you (　　　) in Brazil when you were a child?|live^lived^living^have lived|1|過去形の疑問文なので動詞の原形 live が入ります。|T-basic
+L6-23|Lesson 6|c|Internet shopping has been popular (　　　).|recently^nowadays^at present^those days|1|現在完了形と相性の良い「最近」を表す recently が適しています。|T-perf
+L6-24|Lesson 6|c|I didn't know that. When (　　　) you get the information?|have^did^do^are|2|明確な過去の時点を尋ねる When は現在完了形と一緒に使えず、過去形(did)を使います。|T-basic
+L6-25|Lesson 6|c|The restaurant has been (　　　) since last month.|close^closing^closed^to close|3|「閉まっている」という状態を表す形容詞（過去分詞形）の closed を用います。|T-perf
+L6-26|Lesson 6|c|I have just (　　　) at the station.|reach^arrived^get^approach|2|at が続いているため自動詞の arrived が適しています（reach, getは形が合いません）。|T-perf
+L6-27|Lesson 6|c|Three years have (　　　) since she moved to Nagano.|past^passed^pass^passing|2|「時が経過する」を表す動詞 pass の過去分詞 passed が入ります。|T-perf
+L6-28|Lesson 6|c|Mary has been talking to Bob on the phone (　　　) more than one hour.|during^since^for^in|3|「1時間以上（の間）」という期間を表すため for を用います。|T-perf
+L6-29|Lesson 6|c|He didn't clean the room last week (　　　) he was busy.|because^why^so^that|1|「忙しかったので」という理由を表す接続詞 because が適しています。|T-basic
+L6-30|Lesson 6|c|I have (　　　) Kyoto twice.|been^visited^gone^arrived|2|後ろに to がないため、他動詞の visited が入ります（been to ~ なら正解）。|T-perf
+L6-31|Lesson 6|c|She has liked this stuffed bear (　　　) she was a child.|for^since^from^when|2|「子どもの頃からずっと」という起点を表す接続詞 since を用います。|T-perf
+L6-32|Lesson 6|c|Jim has (　　　) the mountain twice.|climb^climbed^climbing^to climb|2|現在完了形なので過去分詞の climbed が入ります。|T-perf
+L6-33|Lesson 6|c|Ann has (　　　) written the report.|just^yet^ever^still|1|完了の肯定文に用いられる just（ちょうど）が適しています。|T-perf
+L6-34|Lesson 6|c|I have (　　　) seen such beautiful pictures.|never^ever^not^didn't|1|経験の否定「一度も～ない」は never を用います。|T-perf
+L6-35|Lesson 6|c|(　　　) long has Mr. Wood owned this farm?|What^How^When^Which|2|「どのくらい長く」という期間を尋ねる How long を用います。|T-perf
+L6-36|Lesson 6|c|Jeff looks tired. He has (　　　) swimming for two hours.|be^been^being^to be|2|現在完了進行形 (have been doing) の形にします。|T-prog
+L6-37|Lesson 6|c|"When (　　　) you buy the bike?" "Last Sunday."|do^have^did^are|3|When で明確な過去を尋ねているため、過去形(did)を用います。|T-basic
+L6-38|Lesson 6|c|"Do you know Ryan?" "Yes. We have (　　　) good friends for a long time."|be^been^become^gotten|2|「ずっと良い友達である（継続）」は be動詞の過去分詞 been を用います。|T-perf
+L6-39|Lesson 6|c|I didn't (　　　) Mike last week.|see^saw^seen^seeing|1|助動詞 didn't の後ろは動詞の原形 see が入ります。|T-basic
+L6-40|Lesson 6|c|I'm sorry. I haven't finished my work (　　　).|already^yet^still^never|2|否定文で「まだ（終わっていない）」を表す yet を用います。|T-perf
+L6-41|Lesson 6|c|I (　　　) at a seaside hotel in Kobe yesterday.|stay^stayed^have stayed^had stayed|2|yesterdayがあるので過去形 stayed にします。|T-basic
+L6-42|Lesson 6|c|Summer has (　　　).|come^came^coming^to come|1|現在完了形なので come の過去分詞形 come が入ります。|T-perf
+L6-43|Lesson 6|c|Mr. Morris has been (　　　) baseball players’ autographs since he was a high school student.|collect^collected^collecting^to collect|3|現在完了進行形 (have been doing) の形にします。|T-prog
+L6-44|Lesson 6|c|We have (　　　) a lot of rain lately.|had^has^having^to have|1|「雨が降る」を表す have の過去分詞 had が入ります。|T-perf
+L6-45|Lesson 6|c|Have you (　　　) been to Italy?|never^ever^yet^already|2|疑問文で「今までに」という経験を尋ねる ever が入ります。|T-perf
+L6-46|Lesson 6|c|The restaurant hasn't opened (　　　).|yet^already^still^just|1|否定文で「まだ」を表す yet を文末に置きます。|T-perf
+L6-47|Lesson 6|c|Beth has (　　　) glasses for ten years.|wear^wore^worn^wearing|3|現在完了形なので wear の過去分詞 worn が入ります。|T-perf
+L6-48|Lesson 6|c|Jack has (　　　) a popular singer for three years.|be^been^become^got|2|「ずっと～である（継続）」を表すため been を用います。|T-perf
+L6-49|Lesson 6|c|Linda has never (　　　) sushi before.|eat^ate^eaten^eating|3|現在完了形なので eat の過去分詞 eaten が入ります。|T-perf
+L6-50|Lesson 6|c|I have (　　　) my wallet.|lose^lost^losing^to lose|2|「財布を失くしてしまった（完了・結果）」を表すため過去分詞 lost を用います。|T-perf
+L6-51|Lesson 6|c|Mr. Miller has (　　　) to Los Angeles.|go^went^gone^going|3|「～へ行ってしまった（結果）」を表す have gone to を用います。|T-perf
+L6-52|Lesson 6|c|Mary has lived in Nara (　　　) last year.|for^since^from^during|2|「去年からずっと」という起点を表す since を用います。|T-perf
+L6-53|Lesson 6|c|My mother has been (　　　) for an hour.|cook^cooked^cooking^to cook|3|現在完了進行形 (have been doing) の形にします。|T-prog
+L6-54|Lesson 6|c|Peter has been (　　　) of this problem since yesterday.|think^thought^thinking^to think|3|現在完了進行形 (have been doing) の形にします。|T-prog
+L6-55|Lesson 6|c|I have never (　　　) such a dirty sea.|see^saw^seen^seeing|3|現在完了形なので see の過去分詞 seen が入ります。|T-perf
+L6-56|Lesson 6|c|I have (　　　) sent an invitation card to Kate.|yet^already^still^ever|2|肯定文で「すでに」を表す already を用います。|T-perf
+L6-57|Lesson 6|c|My mother has been in hospital (　　　) Thursday.|since^for^during^from|1|「木曜日からずっと」という起点を表す since を用います。|T-perf
+L6-58|Lesson 6|c|I have (　　　) a panda three times.|see^saw^seen^seeing|3|現在完了形なので過去分詞 seen が入ります。|T-perf
+L6-59|Lesson 6|c|Have you finished your homework (　　　)?|already^yet^still^ever|2|疑問文で「もう～しましたか」と尋ねる yet を文末に置きます。|T-perf
+L6-60|Lesson 6|c|How long have you (　　　) him?|know^knew^known^knowing|3|現在完了形なので過去分詞 known が入ります（knowは状態動詞なので進行形にしません）。|T-prog
+L6-61|Lesson 6|c|Her husband has been (　　　) for five years.|die^died^dead^dying|3|「亡くなっている状態」を表す形容詞 dead を用います（has diedだと「5年間死に続けている」になってしまいます）。|T-perf
+L7-01|Lesson 7|c|The party had (　　　) started when we arrived.|yet^already^still^ever|2|過去完了形の肯定文で「すでに～していた」を表す already を用います。|T-perf
+L7-02|Lesson 7|c|I had never (　　　) an opera until I visited Italy.|see^saw^seen^seeing|3|過去完了形なので過去分詞 seen が入ります。|T-perf
+L7-03|Lesson 7|c|She had lived in Paris for three years (　　　) she came to Japan.|before^after^since^until|1|「日本に来る『前』に」という文脈に合う before を用います。|T-basic
+L7-04|Lesson 7|c|We had been (　　　) soccer for an hour when it started to rain.|play^played^playing^to play|3|過去完了進行形 (had been doing) の形にします。|T-prog
+L7-05|Lesson 7|c|I heard that Fred (　　　) returned to Canada.|has^have^had^was|3|「聞いた(heard)」時点よりも前に「帰った」ことを表すため過去完了形(had)を用います。|T-perf
+L7-06|Lesson 7|c|The party will (　　　) started by the time we arrive.|has^have^had^be|2|未来完了形 (will have 過去分詞) の形にします。|T-perf
+L7-07|Lesson 7|c|I'll have seen the movie three times (　　　) I see it again.|if^though^unless^until|1|「『もし』もう一度見れば」という条件を表す if を用います。|T-basic
+L7-08|Lesson 7|c|They will have been married (　　　) 20 years next year.|during^for^since^in|2|「20年間」という期間を表すため for を用います。|T-perf
+L7-09|Lesson 7|c|She had been angry with me (　　　) I apologized to her.|by^until^since^after|2|「謝る『までずっと』」という文脈に合う until を用います。|T-basic
+L7-10|Lesson 7|c|When she called me, I (　　　) just arrived home.|have^has^had^was|3|「電話をかけてきた」時点より前に「到着していた」ため過去完了形(had)を用います。|T-perf
+L7-11|Lesson 7|c|I had never met the principal (　　　) I spoke with him at the school party.|until^by^since^after|1|「話す『までずっと』会ったことがなかった」という文脈に合う until を用います。|T-basic
+L7-12|Lesson 7|c|She had lived in Canada until she (　　　) fifteen.|turn^turned^has turned^had turned|2|「15歳になった」という過去の1点は過去形 turned で表します。|T-basic
+L7-13|Lesson 7|c|Before I introduced him to Lisa, he (　　　) already talked with her.|has^have^had^was|3|「紹介した」時点より前に「話していた」ため過去完了形(had)を用います。|T-perf
+L7-14|Lesson 7|c|Mao had been (　　　) for one hour when her mother came in her room.|sleep^slept^sleeping^to sleep|3|過去完了進行形 (had been doing) の形にします。|T-prog
+L7-15|Lesson 7|c|Takashi had never done volunteer work until he (　　　) high school.|enter^entered^has entered^had entered|2|「高校に入学した」という過去の基準点は過去形 entered で表します。|T-basic
+L7-16|Lesson 7|c|Shohei had been (　　　) for three hours when his smartphone rang.|drive^drove^driven^driving|4|過去完了進行形 (had been doing) の形にします。|T-prog
+L7-17|Lesson 7|c|You will (　　　) received the letter by tomorrow.|has^have^had^be|2|未来の完了を表す未来完了形 (will have + 過去分詞) です。|T-perf
+L7-18|Lesson 7|c|I remembered I had (　　　) the woman in the train a week before.|see^saw^seen^seeing|3|過去完了形なので過去分詞 seen が入ります。|T-perf
+L7-19|Lesson 7|c|I had been looking for you for one hour when you (　　　).|appear^appeared^have appeared^had appeared|2|過去完了進行形の基準となる過去の時点は過去形 appeared で表します。|T-basic
+L7-20|Lesson 7|c|I will have read the book five times if I (　　　) it one more time.|read^will read^have read^had read|1|時・条件の副詞節の中では未来のことでも現在形 read にします。|T-basic
+L7-21|Lesson 7|c|We talked about the movie which we had (　　　) before.|see^saw^seen^seeing|3|「話した」以前に「見た」ため過去完了形を用い、過去分詞 seen にします。|T-perf
+L7-22|Lesson 7|c|I will have finished my homework (　　　) the time my mother comes back.|until^by^on^in|2|「～するまでに（期限）」を表す by the time を用います。|T-basic
+L7-23|Lesson 7|c|I will have (　　　) a teacher for three years next year.|be^been^become^being|2|未来完了形 (will have been) の形にします。|T-perf
+L7-24|Lesson 7|c|I knew that he (　　　) won first prize in the competition.|has^have^had^was|3|「知っていた」時点より前に「優勝した」ため過去完了形(had)を用います。|T-perf
+L7-25|Lesson 7|c|How many times will you have visited the zoo if you (　　　) there again?|go^will go^went^have gone|1|条件の副詞節(if)の中なので未来のことでも現在形 go にします。|T-basic
+L7-26|Lesson 7|c|She had been ill in bed (　　　) a week until yesterday.|during^for^since^in|2|「1週間（の間）」という期間を表す for を用います。|T-perf
+L7-27|Lesson 7|c|Billy will have already finished dinner (　　　) the time I get home.|until^by^at^in|2|「～するまでに（期限）」を表す by the time を用います。|T-basic
+L7-28|Lesson 7|c|They will have (　　　) each other for five years next month.|know^knew^known^knowing|3|未来完了形なので過去分詞 known が入ります。|T-perf
+L7-29|Lesson 7|c|When he reached the building, the conference had (　　　) started.|yet^already^still^ever|2|過去完了形の肯定文で「すでに～していた」を表す already を用います。|T-perf
+L7-30|Lesson 7|c|They will (　　　) used this table for 30 years next month.|has^have^had^be|2|未来完了形 (will have 過去分詞) の形にします。|T-perf
+L7-31|Lesson 7|c|Mayu has lived in Nagano (　　　) she was born.|for^since^from^when|2|「生まれた時からずっと」という起点を表す since を用います。|T-perf
+L7-32|Lesson 7|c|I will have (　　　) reading this book by this time tomorrow.|finish^finished^finishing^to finish|2|未来完了形なので過去分詞 finished が入ります。|T-perf
+L7-33|Lesson 7|c|I recognized the boy immediately. I (　　　) met him once.|have^has^had^was|3|「気づいた」以前に「会ったことがあった」ため過去完了形(had)を用います。|T-perf
+L7-34|Lesson 7|c|We had (　　　) playing cards for many hours when he came.|be^been^being^was|2|過去完了進行形 (had been doing) の形にします。|T-prog
+L7-35|Lesson 7|c|I will have (　　　) to the theme park ten times if I go there again.|gone^been^visited^arrived|2|「～へ行ったことになる」という経験は will have been to で表します。|T-perf
+L7-36|Lesson 7|c|Did you hear that Jack (　　　) moved to Chicago?|has^have^had^was|3|「聞いた」時点より前に「引っ越した」ため過去完了形(had)を用います。|T-perf
+L7-37|Lesson 7|c|He had (　　　) seen the Pacific Ocean until he went to Nagoya.|never^ever^not^always|1|過去完了の経験の否定「一度も～したことがなかった」は never を用います。|T-perf
+L7-38|Lesson 7|c|By the end of this year I will have (　　　) living in Canada for twenty years.|be^been^being^to be|2|未来完了進行形 (will have been doing) の形にします。|T-prog
+L7-39|Lesson 7|c|Kevin had belonged to a soccer team (　　　) he got injured.|by^until^since^after|2|「怪我をする『までずっと』」という文脈に合う until を用います。|T-basic
+L7-40|Lesson 7|c|They had (　　　) each other for many years when they were in the same class.|know^knew^known^knowing|3|過去完了形なので過去分詞 known が入ります（knowは進行形にしません）。|T-prog
+L7-41|Lesson 7|c|I will have seen a koala three times if I (　　　) it again.|see^will see^saw^have seen|1|条件の副詞節(if)の中なので未来のことでも現在形 see にします。|T-basic
+L7-42|Lesson 7|c|Please call me at 1:00 p.m. I will have finished lunch (　　　) that time.|until^by^on^in|2|「その時『までに』は（期限）」を表す by を用います。|T-basic
+L7-43|Lesson 7|c|Mika wore the shoes which her mother (　　　) bought for her ten years ago to the party.|has^have^had^was|3|「履いた」以前に母が「買っていた」ため、過去完了形(had)を用います。|T-perf
+L7-44|Lesson 7|c|We will have (　　　) in Sydney for five years next summer.|be^been^being^gone|2|未来完了形の継続「（ずっと）いることになる」は will have been を用います。|T-perf
+L7-45|Lesson 7|c|Yesterday I knew that Jane (　　　) passed the exam.|has^have^had^was|3|「知った」時点より前に「合格していた」ため過去完了形(had)を用います。|T-perf
+L7-46|Lesson 7|c|I had (　　　) waiting there for an hour when he showed up.|be^been^being^was|2|過去完了進行形 (had been doing) の形にします。|T-prog
+L7-47|Lesson 7|c|As it (　　　) rained the day before, the grass was wet.|has^have^had^was|3|「濡れていた」原因として「その前日に雨が降っていた」ため過去完了形(had)を用います。|T-perf
+L7-48|Lesson 7|c|Didn't you think that Bob (　　　) broken the vase?|has^have^had^was|3|「思った」時点より前に「割った」ため過去完了形(had)を用います。|T-perf
+L7-49|Lesson 7|c|My grandfather will have been (　　　) for 10 years next September.|die^died^dead^dying|3|「亡くなっている状態」の継続を表す形容詞 dead を用います。|T-perf
+L7-50|Lesson 7|c|We had been watching the Olympic Games (　　　) summer vacation started.|for^since^from^when|2|「夏休みが始まってからずっと」という起点を表す since を用います。|T-perf
+L7-51|Lesson 7|c|I believed that Ted (　　　) gone to Brazil.|has^have^had^was|3|「信じていた」時点より前に「行ってしまっていた」ため過去完了形(had)を用います。|T-perf
+L7-52|Lesson 7|c|Takashi will (　　　) found his passport by tomorrow morning.|has^have^had^be|2|未来完了形 (will have + 過去分詞) の形にします。|T-perf
+L7-53|Lesson 7|c|Mr. Parker had been teaching at this school (　　　) he went back to Canada.|by^until^since^after|2|「カナダに帰る『までずっと』」という文脈に合う until を用います。|T-basic
+L7-54|Lesson 7|c|He came to school at last. He (　　　) been in hospital for three months.|has^have^had^was|3|「学校に来た」時点より前に「ずっと入院していた」ため過去完了形(had)を用います。|T-perf
+L7-55|Lesson 7|c|She (　　　) a letter and showed it to me.|write^writes^wrote^had written|3|「手紙を書いて（そして）見せた」という連続する過去の動作なので過去形 wrote で揃えます。|T-basic
+R1-01|Review|c|Ken is (　　　) playing the guitar in his room when he is free.|always^sometimes^never^usually|1|is always doing で「～してばかりいる（非難や驚き）」を表します。|Review
+R1-02|Review|c|He (　　　) a job in this town last year.|get^gets^got^has got|3|last yearという過去の1点があるので過去形 got にします。|Review
+R1-03|Review|c|Did you hear that Mark (　　　) saved a drowning boy?|has^have^had^was|3|「聞いた」時点より前に「助けた」ため過去完了形(had)を用います。|Review
+R1-04|Review|c|It is getting (　　　) lately.|hot^hotter^hottest^hotly|2|get + 比較級 で「だんだん～になる」を表します。|Review
+R1-05|Review|c|Lisa has (　　　) playing this piece for a month.|be^been^being^to be|2|現在完了進行形 (have been doing) の形にします。|Review
+R1-06|Review|c|The children were (　　　) when their mother entered the room.|sleep^slept^sleeping^to sleep|3|「～していた」という過去進行形 (were doing) にします。|Review
+R1-07|Review|c|When Mr. Taylor visited her, she (　　　) already opened the box.|has^have^had^was|3|「訪ねた」時点より前に「開けていた」ため過去完了形(had)を用います。|Review
+R1-08|Review|c|Ryo is coming back to Japan at this time (　　　) month.|last^next^this^past|2|is comingという進行形で近い未来を表すため、未来を示す next month が適しています。|Review
+R1-09|Review|c|I have not seen Judy (　　　) she quit her job.|for^since^from^when|2|「仕事を辞めてからずっと」という起点を表す since を用います。|Review
+R1-10|Review|c|The air (　　　) thin at high altitudes.|is^are^was^were|1|「高地では空気が薄い」という一般的な事実・真理は現在形 is で表します。|Review
+R1-11|Review|c|The construction will (　　　) continued for three years next month.|has^have^had^be|2|未来完了形 (will have 過去分詞) の形にします。|Review
+R1-12|Review|c|Five years (　　　) passed since Nozomi and Stan got married.|has^have^had^are|2|「5年が経過した」は年月を複数ととらえ have passed とします（It has been five years... とも言えます）。|Review
+R1-13|Review|c|Cathy has (　　　) to the US.|go^went^gone^being|3|「～へ行ってしまった（結果）」を表す have gone to を用います。|Review
+R1-14|Review|c|We have been (　　　) the machine since yesterday evening.|repair^repaired^repairing^to repair|3|現在完了進行形 (have been doing) の形にします。|Review
+R1-15|Review|c|He had never (　　　) a plane until he was a college student.|take^took^taken^taking|3|過去完了形なので過去分詞 taken が入ります。|Review
+R1-16|Review|c|She was (　　　) breakfast when I called on her.|have^had^having^to have|3|過去進行形 (was doing) の形にします。|Review
+R1-17|Review|c|As soon as I (　　　) tickets, I'll tell you.|get^will get^got^have got|1|時を表す副詞節(As soon as)の中なので未来のことでも現在形 get にします。|Review
+R1-18|Review|c|They had been (　　　) this issue for five hours when I saw them.|discuss^discussed^discussing^to discuss|3|過去完了進行形 (had been doing) の形にします。|Review
+R1-19|Review|c|Sound (　　　) faster in water than in air.|travel^travels^traveled^traveling|2|「音は水中の方が速く伝わる」という一般的な真理は現在形(三単現のs)で表します。|Review
+R1-20|Review|c|I (　　　) to a drama club at high school.|belong^belongs^belonged^am belonging|3|過去の事実・状態なので過去形 belonged にします。belongは進行形にできません。|Review
+R1-21|Review|c|The same problem (　　　) yesterday.|occur^occurs^occurred^has occurred|3|yesterdayがあるので過去形 occurred にします。|Review
+R1-22|Review|c|Please remember him if you (　　　) Hiroshima.|visit^will visit^visited^have visited|1|条件の副詞節(if)の中なので未来のことでも現在形 visit にします。|Review
+R1-23|Review|c|Are you (　　　) to buy a new bicycle today?|go^went^gone^going|4|「～するつもりだ」という未来の予定を表す be going to を用います。|Review
+R1-24|Review|c|When the project started, it (　　　) been five years since it was planned.|has^have^had^was|3|「始まった」時点よりも前の継続を表すため過去完了形(had)を用います。|Review
+R1-25|Review|c|He was asking me questions while we (　　　) waiting for the train.|are^were^have been^had been|2|主節が過去進行形なので、時制を一致させて過去進行形(were waiting)にします。|Review
+R1-26|Review|c|She didn't know that he (　　　) moved to Saitama.|has^have^had^was|3|「知らなかった」時点より前に「引っ越していた」ため過去完了形(had)を用います。|Review
+R1-27|Review|c|My father usually (　　　) our dog for a walk after dinner.|take^takes^took^taking|2|usually（たいてい）を用いた現在の習慣なので現在形(三単現のs)にします。|Review
+R1-28|Review|c|He (　　　) ill in bed today.|is^has been^was^had been|1|「今日（今）、病気で寝ている」という現在の状態なので is が適しています。|Review
+R1-29|Review|c|I will be (　　　) in Okinawa about this time tomorrow.|dive^dived^diving^to dive|3|「明日の今頃～しているだろう」という未来進行形 (will be doing) の形にします。|Review
+L8-01|Lesson 8|c|She (　　　) play the piano.|can^must to^needs^ought|1|「ピアノが弾ける」という能力を表す can を用います（他は to などが不足または不要です）。|A-can
+L8-02|Lesson 8|c|You (　　　) use my cell phone.|can^need^ought^had|1|「携帯を使ってもいいよ」という許可を表す can を用います。|A-can
+L8-03|Lesson 8|c|"(　　　) you open the door?" "All right."|Must^May^Can^Shall|3|「ドアを開けてくれますか？」という依頼を表す Can you ~ ? を用います。|A-can
+L8-04|Lesson 8|c|An accident (　　　) happen at any time.|must^can^shall^ought|2|「事故はいつでも起こりうる」という可能性を表す can を用います。|A-can
+L8-05|Lesson 8|c|The rumor (　　　) be true.|can't^mustn't^shouldn't^needn't|1|「その噂が本当のはずがない」という強い否定の推量を表す can't を用います。|A-can
+L8-06|Lesson 8|c|You'll be (　　　) to see the stars tonight.|possible^capable^able^likely|3|未来の能力「～できるだろう」を表すため will be able to を用います。|A-can
+L8-07|Lesson 8|c|We (　　　) able to reach the top of the mountain in two hours.|are^were^have^had|2|「（実際に）～することができた」という過去の1回限りの成功は was/were able to を使います。|A-can
+L8-08|Lesson 8|c|You (　　　) use your cell phone here.|aren't^couldn't to^don't have^can't|4|「ここでは携帯を使ってはいけない」という禁止を表す can't (または mustn't) を用います。|A-can
+L8-09|Lesson 8|c|(　　　) I use your cell phone?|Must^Can^Will^Shall|2|「携帯を使ってもいいですか？」という許可を求める Can I ~ ? を用います。|A-can
+L8-10|Lesson 8|c|"(　　　) I ask you a question?" "Sure."|May^Must^Will^Would|1|Can I よりも丁寧な許可の求め方である May I ~ ? を用います。|A-may
+L8-11|Lesson 8|c|He (　　　) be at home.|may^can to^needs^ought|1|「彼は家にいるかもしれない」という推量を表す may を用います。|A-may
+L8-12|Lesson 8|c|You (　　　) not come in.|may^don't^aren't^haven't|1|「入ってはいけない」という不許可を表す may not を用います。|A-may
+L8-13|Lesson 8|c|You (　　　) get some sleep.|must^have^need^ought|1|「少し寝なければならない」という強い義務・助言を表す must を用います。|A-must
+L8-14|Lesson 8|c|You (　　　) not take pictures here.|must^do^have^are|1|「写真を撮ってはいけない」という強い禁止を表す must not を用います。|A-must
+L8-15|Lesson 8|c|I have (　　　) go to the dentist today.|for^to^in^at|2|「～しなければならない」という義務を表す have to を用います。|A-must
+L8-16|Lesson 8|c|You (　　　) have to take off your shoes.|must not^don't^aren't^haven't|2|「靴を脱ぐ必要はない」という不必要を表す don't have to を用います。|A-must
+L8-17|Lesson 8|c|He (　　　) be tired.|must^has to^need^ought|1|「彼は疲れているに違いない」という強い推量を表す must を用います（have toにはこの意味はありません）。|A-must
+L8-18|Lesson 8|c|I had (　　　) wait for two hours.|for^to^in^at|2|過去の義務「～しなければならなかった」は had to で表します（mustに過去形はありません）。|A-must
+L8-19|Lesson 8|c|You will (　　　) to wait long.|must^need^have^ought|3|未来の義務「～しなければならないだろう」は will have to で表します。|A-must
+L8-20|Lesson 8|c|You (　　　) not take off your shoes.|must^need^do^have|2|「靴を脱ぐ必要はない」という意味で、助動詞の need (need not) を用います。|A-must
+L8-21|Lesson 8|c|You (　　　) take off your shoes.|must^need^have^ought|1|「靴を脱がなければならない」という義務を表すため must を用います（他は to が必要です）。|A-must
+L8-22|Lesson 8|c|He (　　　) be tired.|can't^mustn't^hasn't to^needn't|1|must(～に違いない)の反対「～のはずがない」は can't で表します。|A-can
+L8-23|Lesson 8|c|I (　　　) take care of my sister today.|cannot^must not^may not^should not|1|「今日は妹の面倒を見ることができない」という状況を表す cannot が適しています。|A-can
+L8-24|Lesson 8|c|You (　　　) work in casual clothes on Fridays.|can^need^ought^must to|1|「金曜日はカジュアルな服装で働いてもよい」という許可を表す can を用います。|A-can
+L8-25|Lesson 8|c|(　　　) I have a glass of water?|Must^Will^Can^Shall|3|「水を一杯いただけますか？」と許可・依頼を表す Can I ~ ? を用います。|A-can
+L8-26|Lesson 8|c|Anything (　　　) happen in life.|can^must^shall^ought|1|「人生には何事も起こりうる」という可能性を表す can を用います。|A-can
+L8-27|Lesson 8|c|He can't be absent without any reason. He (　　　) be sick.|may^can to^needs^ought|1|理由なく休むはずがないので「彼は病気かもしれない」と推量する may が適しています。|A-may
+L8-28|Lesson 8|c|Miki (　　　) able to swim 100 meters yesterday.|is^was^has^had|2|過去の事実・能力なので was able to を用います。|A-can
+L8-29|Lesson 8|c|You (　　　) want to try some delicious dishes here in Rome.|may^must^can^shall|1|「ローマの美味しい料理を試してみたいと思うかもしれませんね」という控えめな推量・提案の may が適しています。|A-may
+L8-30|Lesson 8|c|"Can I touch these animals?" "No, you (　　　) not. Some of them are poisonous."|must^need^do^have|1|「毒があるから触ってはいけない」という強い禁止を表す must not を用います。|A-must
+L8-31|Lesson 8|c|Alice had a fever yesterday. She (　　　) not come to the party today.|may^must^can^does|1|「熱があったから来ないかもしれない」という推量を表す may not を用います。|A-may
+L8-32|Lesson 8|c|The concert will start in ten minutes. We (　　　) hurry, or we miss it!|must^may^can^might|1|「急がないと見逃してしまう」という強い義務・必要性を表す must を用います。|A-must
+L8-33|Lesson 8|c|We (　　　) have to wear a jacket because it’s already 32 degrees.|mustn't^don't^aren't^haven't|2|「暑いので着る必要はない」という don't have to を用います。|A-must
+L8-34|Lesson 8|c|(　　　) he have to see a doctor?|Do^Does^Is^Has|2|have to の疑問文は do/does を用いて作ります。|A-must
+L8-35|Lesson 8|c|I (　　　) go shopping with you next week.|can^must to^needs^ought|1|「来週一緒に買い物に行ける」という能力・予定を表す can を用います。|A-can
+L8-36|Lesson 8|c|It (　　　) be a joke.|can't^mustn't^hasn't to^needn't|1|「冗談のはずがない」という強い否定の推量を表す can't を用います。|A-can
+L8-37|Lesson 8|c|She (　　　) to take care of the children all day yesterday.|must^had^should^ought|2|過去の義務「～しなければならなかった」を表すため had to を用います。|A-must
+L8-38|Lesson 8|c|(　　　) I eat lunch here?|Must^Could^Will^Shall|2|Can I より丁寧な許可の求め方である Could I ~ ? を用います。|A-can
+L8-39|Lesson 8|c|She (　　　) be in trouble.|may^can to^needs^ought|1|「彼女は困っているかもしれない」という推量を表す may を用います。|A-may
+L8-40|Lesson 8|c|You (　　　) not eat just before bedtime.|must^do^have^are|1|「寝る直前に食べてはいけない」という禁止を表す must not を用います。|A-must
+L8-41|Lesson 8|c|Yuta (　　　) not agree with your opinion.|may^must^can^does|1|「同意しないかもしれない」という推量を表す may not を用います。|A-may
+L8-42|Lesson 8|c|Emma hasn't been (　　　) to get information about it yet.|possible^capable^able^likely|3|現在完了形の中で「～できる」を表すため been able to を用います。|A-can
+L8-43|Lesson 8|c|You (　　　) have to answer that question in a hurry.|mustn't^don't^aren't^haven't|2|「急いで答える必要はない」という don't have to を用います。|A-must
+L8-44|Lesson 8|c|Where (　　　) I get a bus ticket?|can^must^ought^have|1|「どこで買えますか（買うことができますか）」と尋ねるため can を用います。|A-can
+L8-45|Lesson 8|c|"Can you lend me your notebook for a few days?" "I'm sorry I (　　　)."|can't^mustn't^don't^am not|1|Can youの依頼に対して「（できなくて）ごめんなさい」と断るため can't を用います。|A-can
+L8-46|Lesson 8|c|You (　　　) see the movie. It's very exciting.|must^may^can^might|1|「絶対見た方がいい」という強いお勧めを表す must を用います。|A-must
+L8-47|Lesson 8|c|She (　　　) be a wonderful teacher.|must^has to^need^ought|1|「素晴らしい先生に違いない」という強い推量を表す must を用います。|A-must
+L8-48|Lesson 8|c|If you need the book, you (　　　) buy it.|may^must^shall^need|1|「必要なら買ってもいいよ」という許可の may を用います。|A-may
+L8-49|Lesson 8|c|You (　　　) have to pay shipping for these books.|mustn't^don't^aren't^haven't|2|「送料を払う必要はない」という不必要を表す don't have to を用います。|A-must
+L8-50|Lesson 8|c|She won't be (　　　) to come to see you tomorrow.|possible^capable^able^likely|3|未来の能力の否定「～できないだろう」を表すため won't be able to を用います。|A-can
+L8-51|Lesson 8|c|(　　　) you write down your address here?|Must^Could^May^Shall|2|「ここに住所を書いていただけますか？」という丁寧な依頼を表す Could you ~ ? を用います。|A-can
+L8-52|Lesson 8|c|He said nothing. He (　　　) be angry.|may^can to^needs^ought|1|「何も言わなかったので、怒っているのかもしれない」という推量を表す may を用います。|A-may
+L8-53|Lesson 8|c|They (　　　) be the students from that high school.|must^have to^need^ought|1|「あの高校の生徒に違いない」という強い推量を表す must を用います。|A-must
+L8-54|Lesson 8|c|You (　　　) not talk in such a loud voice here.|must^do^have^are|1|「大きな声で話してはいけない」という禁止を表す must not を用います。|A-must
+L8-55|Lesson 8|c|That man (　　　) be Jack. He is in Paris now.|cannot^must not^may not^should not|1|「ジャックはパリにいるのだから、（あの人が）ジャックのはずがない」という強い否定の推量の cannot を用います。|A-can
+L8-56|Lesson 8|c|She will (　　　) to tell the truth soon.|must^need^have^ought|3|未来の義務「～しなければならなくなるだろう」は will have to で表します。|A-must
+L8-57|Lesson 8|c|(　　　) she drive a car?|Can^Does^Is^Has|1|「彼女は車を運転できますか？」という能力を尋ねるため Can を用います。|A-can
+L8-58|Lesson 8|c|He (　　　) be in his room.|may^can to^needs^ought|1|「彼は部屋にいるかもしれない」という推量を表す may を用います。|A-may
+L8-59|Lesson 8|c|You (　　　) to wash your hands before meals.|must^have^need^should|2|後ろに to があるため、義務を表す have (have to) を用います。|A-must
+L8-60|Lesson 8|c|Beth (　　　) to be there by five.|must^had^should^ought|2|過去の義務「5時までにいなければならなかった」を表すため had to を用います（ought toは通常現在から未来の義務です）。|A-must
+L8-61|Lesson 8|c|You (　　　) have to wear a jacket in the office.|mustn't^don't^aren't^haven't|2|「ジャケットを着る必要はない」という不必要を表す don't have to を用います。|A-must
+L8-62|Lesson 8|c|Tom (　　　) be sick.|cannot^must not^may not^should not|1|「トムが病気のはずがない」という否定の推量を表す cannot (または「病気かもしれない」may not)が考えられますが、文脈上 cannot を正解としています。|A-can
+L8-63|Lesson 8|c|I haven't (　　　) able to talk to him lately.|be^been^being^was|2|現在完了形で能力を表すため、have been able to の形にします。|A-can
+L8-64|Lesson 8|c|You (　　　) not play the guitar late at night.|should^ought^have^are|1|「夜遅くにギターを弾くべきではない」という助言を表す should not を用います（ought not to には to が必要です）。|A-should
+L8-65|Lesson 8|c|A terrible accident like this (　　　) occur again.|can^must^shall^ought|1|「このような事故はまた起こりうる」という可能性を表す can を用います。|A-can
+L8-66|Lesson 8|c|Young people (　　　) live comfortably in such a small village.|cannot^must not^may not^do not|1|「あんな小さな村では若者は快適に暮らすことができない」という能力（不可能）を表す cannot を用います。|A-can
+L8-67|Lesson 8|c|You (　　　) have to stand outside.|mustn't^don't^aren't^haven't|2|「外で立っている必要はない」という不必要を表す don't have to を用います。|A-must
+L8-68|Lesson 8|c|You (　　　) not smoke here.|must^do^have^are|1|「ここでタバコを吸ってはいけない」という禁止を表す must not を用います。|A-must
+L8-69|Lesson 8|c|Sho (　　　) able to run 100 meters in 11 seconds yesterday.|is^was^has^had|2|過去の能力・実績なので was able to を用います。|A-can
+L8-70|Lesson 8|c|(　　　) I see your passport?|May^Must^Will^Would|1|「パスポートを拝見してもよろしいですか？」と丁寧な許可を求める May I ~ ? を用います。|A-may
+L8-71|Lesson 8|c|You (　　　) not sleep in class.|must^do^have^are|1|「授業中に寝てはいけない」という禁止を表す must not を用います。|A-must
+L8-72|Lesson 8|c|If you are tired, you (　　　) have to go out with us.|mustn't^don't^aren't^haven't|2|「疲れているなら一緒に外出する必要はない」という不必要を表す don't have to を用います。|A-must
+L8-73|Lesson 8|c|That man (　　　) be the criminal.|must^has to^need^ought|1|「あの男が犯人に違いない」という強い推量を表す must を用います。|A-must
+L8-74|Lesson 8|c|(　　　) they able to cross the river?|Are^Were^Have^Did|2|過去の能力「川を渡ることができたか」を尋ねるため Were (able to) を用います。|A-can
+L8-75|Lesson 8|c|A war (　　　) break out between the two countries.|may^can to^needs^ought|1|「両国間で戦争が勃発するかもしれない」という推量を表す may を用います。|A-may
+L8-76|Lesson 8|c|You (　　　) have to water the potted plant every day.|mustn't^don't^aren't^haven't|2|「毎日水をやる必要はない」という不必要を表す don't have to を用います。|A-must
+L8-77|Lesson 8|c|(　　　) you tell me how to use this computer?|Must^Could^May^Shall|2|「パソコンの使い方を教えていただけませんか？」という丁寧な依頼の Could you ~ ? を用います。|A-can
+L8-78|Lesson 8|c|He (　　　) to walk home in the rain yesterday.|must^had^should^ought|2|「歩いて帰らなければならなかった」という過去の義務なので had to を用います。|A-must
+L9-01|Lesson 9|c|You (　　　) be more careful.|should^ought^had^need|1|「もっと気をつけるべきだ」という助言を表す should を用います（oughtにはtoが必要です）。|A-should
+L9-02|Lesson 9|c|They (　　　) to arrive here soon.|should^ought^had^must|2|後ろに to があるため、義務や当然を表す ought to を用います。|A-should
+L9-03|Lesson 9|c|You (　　　) better see a doctor.|should^had^would^ought|2|「医者に診てもらった方がいい」という強い助言を表す had better を用います。|A-idiom
+L9-04|Lesson 9|c|You had better (　　　) go to school today.|not^to not^not to^don't|1|had better の否定形は had better not です。|A-idiom
+L9-05|Lesson 9|c|It (　　　) rain this afternoon.|will^used to^ought^had better|1|「午後には雨が降るだろう」という未来の予測を表す will を用います。|A-will
+L9-06|Lesson 9|c|I'll (　　　) my homework after dinner.|do^doing^to do^did|1|助動詞 will (I'll) の後ろは動詞の原形 do が入ります。|A-will
+L9-07|Lesson 9|c|The door (　　　) open.|wouldn't^shouldn't^mustn't^needn't|1|「ドアがどうしても開かなかった」という過去の強い拒絶を表す wouldn't を用います。|A-will
+L9-08|Lesson 9|c|"(　　　) you open the door?" "Sure."|Must^Will^May^Shall|2|「ドアを開けてくれませんか」という依頼を表す Will you ~ ? を用います。|A-will
+L9-09|Lesson 9|c|They (　　　) be on the island by now.|will^used to^ought^had better|1|「今頃は島にいるだろう」という予測の will (または ought to, should) を用います。選択肢の中で成立するのは will です。|A-will
+L9-10|Lesson 9|c|Babies (　　　) cry.|will^used to^ought^had better|1|「赤ん坊は泣くものだ」という現在の習性を表す will を用います。|A-will
+L9-11|Lesson 9|c|We (　　　) often go to the movies.|would^should^used^had|1|「よく映画に行ったものだ」という過去の反復的な習慣を表す would often を用います。|A-will
+L9-12|Lesson 9|c|My little sister (　　　) eat vegetables.|won't^shouldn't^mustn't^needn't|1|「どうしても野菜を食べようとしない」という現在の強い拒絶を表す won't (will not) を用います。|A-will
+L9-13|Lesson 9|c|(　　　) you come in?|Won't^Shouldn't^Mustn't^Needn't|1|「入ってきませんか」と丁寧に勧める Won't you ~ ? を用います。|A-will
+L9-14|Lesson 9|c|She (　　　) be in bed by now.|would^used^ought^had better|1|「今頃はもう寝ているだろう」という推量を表す would を用います（ought toのtoが不足しています）。|A-will
+L9-15|Lesson 9|c|I (　　　) to walk to school with my friends.|used^would^should^had better|1|「以前は友達と歩いて登校したものだ」という過去の習慣を表す used to を用います。|A-idiom
+L9-16|Lesson 9|c|There (　　　) to be a theater in the town.|used^would^should^had better|1|「昔は劇場があった（今は無い）」という過去の状態を表す used to を用います（wouldは状態には使えません）。|A-idiom
+L9-17|Lesson 9|c|"(　　　) I open the window?" "Yes, please."|Shall^Will^Would^Do|1|「窓を開けましょうか？」と申し出る Shall I ~ ? を用います。|A-will
+L9-18|Lesson 9|c|"(　　　) we go to a movie tomorrow?" "Yes, let's."|Shall^Will^Would^Do|1|「明日映画に行きませんか？」と提案する Shall we ~ ? を用います。|A-will
+L9-19|Lesson 9|c|You (　　　) keep a diary in English.|should^ought^had^need|1|「英語で日記をつけるべきだ」という助言を表す should を用います。|A-should
+L9-20|Lesson 9|c|He (　　　) to be on his way to London from Paris now.|should^ought^had^must|2|後ろに to があるため、当然「今頃はロンドンに向かっているはずだ」を表す ought to を用います。|A-should
+L9-21|Lesson 9|c|Children (　　　) better follow their parents' advice.|should^had^would^ought|2|「親の忠告に従った方がいい」という had better を用います。|A-idiom
+L9-22|Lesson 9|c|My father (　　　) be in the plane now.|will^used to^ought^had better|1|「父は今頃飛行機に乗っているだろう」という予測を表す will を用います。|A-will
+L9-23|Lesson 9|c|They (　　　) often go to that park when they were children.|would^should^used^had|1|「子供の頃よくあの公園に行ったものだ」という過去の習慣を表す would often を用います。|A-will
+L9-24|Lesson 9|c|Computers (　　　) sometimes freeze up.|will^used to^ought^had better|1|「コンピュータは時にフリーズするものだ」という習性を表す will を用います。|A-will
+L9-25|Lesson 9|c|"Did you water the plant?" "Oh, I forgot! I'll (　　　) now."|do^doing^to do^did|1|助動詞 I'll (I will) の後は動詞の原形 do (do it) が続きます。|A-will
+L9-26|Lesson 9|c|They (　　　) believe the President's words.|wouldn't^shouldn't^mustn't^needn't|1|「どうしても大統領の言葉を信じようとしなかった」という過去の拒絶 wouldn't を用います。|A-will
+L9-27|Lesson 9|c|(　　　) you carry this suitcase to my room?|Will^Must^May^Shall|1|「スーツケースを運んでくれませんか」という依頼の Will you ~ ? を用います。|A-will
+L9-28|Lesson 9|c|(　　　) I help you move the table?|Shall^Will^Would^Do|1|「テーブルを動かすのを手伝いましょうか」という申し出の Shall I ~ ? を用います。|A-will
+L9-29|Lesson 9|c|This building (　　　) to be a famous museum.|used^would^should^had better|1|「昔は有名な博物館だった」という過去の状態を表す used to を用います。|A-idiom
+L9-30|Lesson 9|c|He (　　　) often fight with his brother when he was a child.|would^should^used^had|1|「子供の頃よく兄弟げんかをしたものだ」という過去の習慣を表す would often を用います。|A-will
+L9-31|Lesson 9|c|(　　　) I play the piano during the ceremony?|Shall^Will^Would^Do|1|「式典中にピアノを弾きましょうか」という申し出の Shall I ~ ? を用います。|A-will
+L9-32|Lesson 9|c|She (　　　) to go to bed early.|used^would^should^had better|1|「彼女は以前は早く寝ていた（今は違う）」という過去の習慣 used to を用います。|A-idiom
+L9-33|Lesson 9|c|You had better (　　　) stay up late every night.|not^to not^not to^don't|1|「夜更かししない方がよい」という had better の否定形 had better not を用います。|A-idiom
+L9-34|Lesson 9|c|We (　　　) to turn off the TV when we don't watch it.|should^ought^had^must|2|後ろに to があるため、義務「消すべきだ」を表す ought to を用います。|A-should
+L9-35|Lesson 9|c|The key (　　　) come out of the lock.|wouldn't^shouldn't^mustn't^needn't|1|「鍵がどうしても抜けなかった」という過去の強い拒絶を表す wouldn't を用います。|A-will
+L9-36|Lesson 9|c|The boys (　　　) keep quiet.|won't^shouldn't^mustn't^needn't|1|「男の子たちはどうしても静かにしようとしない」という現在の拒絶を表す won't を用います。|A-will
+L9-37|Lesson 9|c|Human beings (　　　) make mistakes.|will^used to^ought^had better|1|「人間はミスをするものだ」という習性を表す will を用います。|A-will
+L9-38|Lesson 9|c|"(　　　) we go for a walk in the park?" "Yes, let's."|Shall^Will^Would^Do|1|「公園を散歩しませんか」という提案の Shall we ~ ? を用います。|A-will
+L9-39|Lesson 9|c|You'd (　　　) keep your word.|should^had^better^ought|3|You'd は You had の短縮形であり、「約束を守った方がいい」という had better を用います。|A-idiom
+L9-40|Lesson 9|c|My mother (　　　) be at my grandmother's house by now.|should^ought^had^need|1|「母は今頃祖母の家にいるはずだ」という当然の推量 should を用います。|A-should
+L9-41|Lesson 9|c|I (　　　) go out with her tomorrow.|will^used to^ought^had better|1|「明日は彼女と出かけるつもりだ」という意志・予定を表す will を用います。|A-will
+L9-42|Lesson 9|c|You were late again! You (　　　) get up earlier.|should^ought^had^need|1|「もっと早く起きるべきだ」という非難・助言を表す should を用います。|A-should
+L9-43|Lesson 9|c|(　　　) I introduce you to her?|Shall^Will^Would^Do|1|「彼女を紹介しましょうか？」という申し出の Shall I ~ ? を用います。|A-will
+L9-44|Lesson 9|c|Shinichi (　　　) often play soccer in the park when he was a child.|would^should^used^had|1|「子供の頃よくサッカーをしたものだ」という過去の習慣を表す would often を用います。|A-will
+L9-45|Lesson 9|c|Old people (　　　) complain to young people.|will^used to^ought^had better|1|「老人は若者に文句を言うものだ」という習性を表す will を用います。|A-will
+L9-46|Lesson 9|c|She (　　　) accept his offer.|wouldn't^shouldn't^mustn't^needn't|1|「彼女はどうしても申し出を受け入れようとしなかった」という過去の拒絶を表す wouldn't を用います。|A-will
+L9-47|Lesson 9|c|Parents (　　　) be models for their children.|should^ought to^had better^used to|1|「親は子供の手本となるべきだ」という義務・助言を表す should (または ought to) を用います。※選択肢にought toがありますが通常助動詞単独の選択としてshouldを正解とします。|A-should
+L9-48|Lesson 9|c|My father (　　　) often tell me the story.|would^should^used^had|1|「父はよくその話をしてくれたものだ」という過去の習慣を表す would often を用います。|A-will
+L9-49|Lesson 9|c|"(　　　) we have lunch in that new restaurant?" "No, let's not."|Shall^Will^Would^Do|1|「あのレストランでランチにしませんか」という提案の Shall we ~ ? を用います。|A-will
+L9-50|Lesson 9|c|You had (　　　) ask his opinion before you decide.|should^better^would^ought|2|「決める前に彼の意見を聞いた方がいい」という had better を用います。|A-idiom
+L9-51|Lesson 9|c|This door (　　　) to remain closed at any time.|used^would^should^had better|1|「このドアはいつでも閉まっていたものだ」という過去の状態を表す used to を用います。|A-idiom
+L9-52|Lesson 9|c|He (　　　) be a great scholar.|will^used to^ought^had better|1|「彼は偉大な学者になるだろう」という予測の will を用います。|A-will
+L9-53|Lesson 9|c|She (　　　) come back.|should^ought^had^need|1|「彼女は戻ってくるはずだ（戻るべきだ）」という推量・義務の should を用います。|A-should
+L9-54|Lesson 9|c|He (　　　) to be a great baseball player.|used^would^should^had better|1|「昔はすごい野球選手だった」という過去の状態を表す used to を用います。|A-idiom
+L9-55|Lesson 9|c|Lisa (　　　) be in New York now.|will^used to^ought^had better|1|「リサは今頃ニューヨークにいるだろう」という推量の will を用います。|A-will
+L9-56|Lesson 9|c|I sent a letter to her yesterday. It (　　　) reach her soon.|should^ought^had^need|1|「すぐに着くはずだ」という当然の推量を表す should を用います。|A-should
+L9-57|Lesson 9|c|(　　　) you sit down, please?|Will^Shall^Must^May|1|「座っていただけませんか」という依頼を表す Will you ~ ? を用います。|A-will
+L9-58|Lesson 9|c|I (　　　) be an astronaut in the future.|will^used to^ought^had better|1|「将来宇宙飛行士になるつもりだ」という意志・予測の will を用います。|A-will
+L9-59|Lesson 9|c|You had better (　　　) play in the snow today.|not^to not^not to^don't|1|「今日は雪の中で遊ばない方がいい」という had better not を用います。|A-idiom
+L9-60|Lesson 9|c|I (　　　) often stand reading in the bookstore after school.|would^should^used^had|1|「放課後よく本屋で立ち読みをしたものだ」という過去の習慣を表す would often を用います。|A-will
+L9-61|Lesson 9|c|You ought (　　　) to bother her.|not^to not^no^don't|1|ought to の否定形は ought not to です。|A-should
+L9-62|Lesson 9|c|You look tired. (　　　) I make you a cup of coffee?|Shall^Will^Would^Do|1|「コーヒーをいれましょうか？」という申し出の Shall I ~ ? を用います。|A-will
+L9-63|Lesson 9|c|I (　　　) to go to school with my sister.|used^would^should^had better|1|「以前は妹と一緒に登校したものだ」という過去の習慣の used to を用います。|A-idiom
+L9-64|Lesson 9|c|The hiccups (　　　) stop.|won't^shouldn't^mustn't^needn't|1|「しゃっくりがどうしても止まらない」という現在の拒絶を表す won't を用います。|A-will
+L9-65|Lesson 9|c|You (　　　) not say such a thing to your mother.|should^ought^had^need|1|「母親にそんな事を言うべきではない」という助言の should not を用います。|A-should
+L9-66|Lesson 9|c|(　　　) you open the window, please?|Would^Shall^Must^May|1|Will you より丁寧な依頼である Would you ~ ? を用います。|A-will
+L9-67|Lesson 9|c|(　　　) you go out tonight?|Won't^Shouldn't^Mustn't^Needn't|1|「今夜外出しませんか」と勧める Won't you ~ ? を用います。|A-will
+L9-68|Lesson 9|c|Our baseball team (　　　) win the game.|will^used to^ought^had better|1|「私たちのチームが勝つだろう」という予測の will を用います。|A-will
+L9-69|Lesson 9|c|There (　　　) to be an old hospital on the hillside.|used^would^should^had better|1|「昔は古い病院があった」という過去の状態を表す used to を用います。|A-idiom
+L9-70|Lesson 9|c|You (　　　) drive more slowly.|should^ought^had^need|1|「もっとゆっくり運転するべきだ」という助言の should を用います。|A-should
+L9-71|Lesson 9|c|Mr. Hill (　　　) to live in Kyoto.|used^would^should^had better|1|「ヒルさんは以前京都に住んでいた」という過去の状態を表す used to を用います。|A-idiom
+`;
+
+    // 圧縮された文字列からJavaScriptのオブジェクト配列に変換
+    const qData = rawData.trim().split('\n').map(line => {
+      const p = line.split('|');
+      if (p.length < 8) return null;
+      return {
+        i: p[0], s: p[1], t: p[2], 
+        q: p[3].replace(/_N_/g, '\n'), 
+        c: p[4] ? p[4].split('^') : [], 
+        a: isNaN(p[5]) ? p[5] : parseInt(p[5], 10), 
+        e: p[6].replace(/_N_/g, '\n'),
+        g: p[7]
+      };
+    }).filter(Boolean);
+
+    let state = {
+      currentMode: 'menu', 
+      questions: [],
+      currentIndex: 0,
+      score: 0,
+      mistakes: JSON.parse(localStorage.getItem('grammarMasteryMistakes_new') || '[]'),
+      progress: JSON.parse(localStorage.getItem('grammarMasteryProgress_new') || '{}'),
+      currentQuizMode: null,
+      isAnswered: false,
+      selectedAnswer: null,
+      isCorrect: false,
+      constructedAnswer: '',
+      availableWords: []
+    };
+
+    function setState(newState) {
+      state = { ...state, ...newState };
+      if (newState.mistakes !== undefined) {
+        localStorage.setItem('grammarMasteryMistakes_new', JSON.stringify(state.mistakes));
+      }
+      if (newState.progress !== undefined) {
+        localStorage.setItem('grammarMasteryProgress_new', JSON.stringify(state.progress));
+      }
+      render();
+    }
+
+    function getQuestionTypeLabel(type) {
+      switch (type) {
+        case 'c': return '四択問題（空所に適切な語を選択）';
+        case 'e': return '誤り指摘問題（誤っている箇所を1つ選択）';
+        case 'o': return '並べ替え問題';
+        case 'f': return '穴埋め・書き換え問題';
+        default: return '問題';
+      }
+    }
+
+    window.startQuiz = function(mode, resume = false) {
+      let targetQuestions = [];
+      let currentIdx = 0;
+      let currentScore = 0;
+
+      if (resume && state.progress[mode]) {
+        const prog = state.progress[mode];
+        targetQuestions = prog.order.map(id => qData.find(q => q.i === id)).filter(Boolean);
+        currentIdx = prog.currentIndex;
+        currentScore = prog.score;
+      } else {
+        if (mode === 'all') {
+          targetQuestions = [...qData].sort(() => Math.random() - 0.5);
+        } else if (mode === 'mistakes') {
+          targetQuestions = qData.filter(q => state.mistakes.includes(q.i)).sort(() => Math.random() - 0.5);
+        } else {
+          targetQuestions = qData.filter(q => q.s === mode).sort(() => Math.random() - 0.5);
+        }
+
+        if (targetQuestions.length === 0) return;
+
+        state.progress[mode] = { order: targetQuestions.map(q => q.i), currentIndex: 0, score: 0 };
+        localStorage.setItem('grammarMasteryProgress_new', JSON.stringify(state.progress));
+      }
+
+      const firstQ = targetQuestions[currentIdx];
+      setState({
+        currentMode: 'quiz',
+        currentQuizMode: mode,
+        questions: targetQuestions,
+        currentIndex: currentIdx,
+        score: currentScore,
+        ...resetQuestionState(firstQ)
+      });
+    };
+
+    function resetQuestionState(question) {
+      return {
+        isAnswered: false,
+        selectedAnswer: null,
+        isCorrect: false,
+        constructedAnswer: '',
+        availableWords: question.t === 'o' ? [...question.c].sort(() => Math.random() - 0.5) : []
+      };
+    }
+
+    window.goNext = function() {
+      if (state.currentIndex + 1 < state.questions.length) {
+        const nextIdx = state.currentIndex + 1;
+        if (state.progress[state.currentQuizMode]) {
+          state.progress[state.currentQuizMode].currentIndex = nextIdx;
+          state.progress[state.currentQuizMode].score = state.score;
+          localStorage.setItem('grammarMasteryProgress_new', JSON.stringify(state.progress));
+        }
+        const nextQ = state.questions[nextIdx];
+        setState({ currentIndex: nextIdx, ...resetQuestionState(nextQ) });
+      } else {
+        if (state.progress[state.currentQuizMode]) {
+          delete state.progress[state.currentQuizMode];
+          localStorage.setItem('grammarMasteryProgress_new', JSON.stringify(state.progress));
+        }
+        setState({ currentMode: 'result' });
+      }
+    };
+
+    window.goToMenu = function() { setState({ currentMode: 'menu' }); };
+
+    window.handleChoiceSubmit = function(choiceIndex) {
+      if (state.isAnswered) return;
+      const currentQ = state.questions[state.currentIndex];
+      const isCorrect = (choiceIndex + 1) === currentQ.a;
+      let newMistakes = [...state.mistakes];
+      let newScore = state.score;
+
+      if (isCorrect) {
+        newScore += 1;
+        newMistakes = newMistakes.filter(id => id !== currentQ.i);
+      } else {
+        if (!newMistakes.includes(currentQ.i)) newMistakes.push(currentQ.i);
+      }
+      setState({ isCorrect, selectedAnswer: choiceIndex + 1, isAnswered: true, score: newScore, mistakes: newMistakes });
+    };
+
+    window.handleWordClick = function(idx) {
+      if (state.isAnswered) return;
+      const word = state.availableWords[idx];
+      setState({
+        constructedAnswer: state.constructedAnswer ? state.constructedAnswer + ' ' + word : word,
+        availableWords: state.availableWords.filter((_, i) => i !== idx)
+      });
+    };
+
+    window.handleClearConstructed = function() {
+      if (state.isAnswered) return;
+      setState({ constructedAnswer: '', availableWords: [...state.questions[state.currentIndex].c].sort(() => Math.random() - 0.5) });
+    };
+
+    window.handleTextSubmit = function(submittedText) {
+      if (state.isAnswered) return;
+      const currentQ = state.questions[state.currentIndex];
+      const normalizedSub = (submittedText || '').trim().replace(/\s+/g, ' ').toLowerCase();
+      const normalizedAns = String(currentQ.a).trim().replace(/\s+/g, ' ').toLowerCase();
+      const isCorrect = normalizedSub === normalizedAns;
+      let newMistakes = [...state.mistakes];
+      let newScore = state.score;
+
+      if (isCorrect) {
+        newScore += 1;
+        newMistakes = newMistakes.filter(id => id !== currentQ.i);
+      } else {
+        if (!newMistakes.includes(currentQ.i)) newMistakes.push(currentQ.i);
+      }
+      setState({ isCorrect, selectedAnswer: submittedText, isAnswered: true, score: newScore, mistakes: newMistakes });
+    };
+
+    window.handleInputChange = function(val) {
+      if (state.isAnswered) return;
+      state.constructedAnswer = val;
+    };
+
+    window.handleInputKeydown = function(e, val) {
+      if (e.key === 'Enter' && !state.isAnswered) handleTextSubmit(val);
+    };
+
+    function renderMenuHtml() {
+      const stepNames = ['Lesson 6', 'Lesson 7', 'Review', 'Lesson 8', 'Lesson 9'];
+      let stepsHtml = '';
+      
+      stepNames.forEach(step => {
+        const p = state.progress[step];
+        const hasProgress = p && p.currentIndex > 0 && p.currentIndex < p.order.length;
+        const count = qData.filter(q => q.s === step).length;
+        if (count === 0) return;
+
+        stepsHtml += `
+          <div class="flex flex-col relative w-full h-full">
+            <button onclick="startQuiz('${step}', ${hasProgress ? 'true' : 'false'})" class="flex flex-col items-center justify-center bg-white border ${hasProgress ? 'border-blue-400 shadow-md bg-blue-50' : 'border-slate-200 hover:border-blue-400 hover:shadow-md'} text-slate-700 p-3 md:p-4 rounded-xl transition-all h-full w-full">
+              <span class="font-bold text-base md:text-lg">${step}</span>
+              <span class="text-xs md:text-sm mt-1 ${hasProgress ? 'text-blue-600 font-bold' : 'text-slate-400'}">
+                ${hasProgress ? `続きから ${p.currentIndex}/${p.order.length}問` : `${count}問`}
+              </span>
+            </button>
+            ${hasProgress ? `
+              <button onclick="startQuiz('${step}', false)" class="absolute -top-2 -right-2 bg-white border border-slate-200 shadow-sm rounded-full p-1.5 text-slate-400 hover:text-red-500 transition-colors" title="最初からやり直す">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+              </button>
+            ` : ''}
+          </div>
+        `;
+      });
+
+      const pAll = state.progress['all'];
+      const hasAllProgress = pAll && pAll.currentIndex > 0 && pAll.currentIndex < pAll.order.length;
+      const pMistakes = state.progress['mistakes'];
+      const hasMistakesProgress = pMistakes && pMistakes.currentIndex > 0 && pMistakes.currentIndex < pMistakes.order.length;
+      const mistakesDisabled = !hasMistakesProgress && state.mistakes.length === 0;
+
+      return `
+        <div class="flex flex-col items-center justify-center h-full p-4 md:p-8 space-y-6 md:space-y-8 fade-in">
+          <div class="text-center space-y-3 md:space-y-4 mt-6 md:mt-12">
+            <h1 class="text-2xl md:text-4xl font-bold text-slate-800 tracking-tight">1-6 Special EnGra 6-9</h1>
+            <p class="text-sm md:text-base text-slate-500 font-medium">重要文法 厳選・完全統合版（全${qData.length}問）</p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 md:gap-4 w-full max-w-2xl">
+            <div class="flex flex-col w-full h-full col-span-2 md:col-span-1">
+              <button onclick="startQuiz('all', ${hasAllProgress ? 'true' : 'false'})" class="flex flex-col items-center justify-center bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-xl shadow-md transition-all transform hover:scale-105 h-full w-full">
+                <div class="flex items-center space-x-2 md:space-x-3">
+                  <i data-lucide="play" class="w-5 h-5 md:w-6 md:h-6"></i>
+                  <span class="text-base md:text-lg font-semibold">${hasAllProgress ? '全問題 (続きから)' : '全問題に挑戦'}</span>
+                </div>
+                <span class="text-xs md:text-sm text-blue-200 mt-1">${hasAllProgress ? `${pAll.currentIndex}/${pAll.order.length}問` : `${qData.length}問`}</span>
+              </button>
+              ${hasAllProgress ? `<button onclick="startQuiz('all', false)" class="mt-2 text-xs md:text-sm text-slate-500 hover:text-blue-600 underline transition-colors text-center">最初からやり直す</button>` : ''}
+            </div>
+
+            <div class="flex flex-col w-full h-full col-span-2 md:col-span-1">
+              <button 
+                onclick="startQuiz('mistakes', ${hasMistakesProgress ? 'true' : 'false'})" 
+                ${mistakesDisabled ? 'disabled' : ''}
+                class="flex flex-col items-center justify-center p-4 rounded-xl shadow-md transition-all h-full w-full ${!mistakesDisabled ? 'bg-orange-500 hover:bg-orange-600 text-white transform hover:scale-105' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}">
+                <div class="flex items-center space-x-2 md:space-x-3">
+                  <i data-lucide="refresh-cw" class="w-5 h-5 md:w-6 md:h-6"></i>
+                  <span class="text-base md:text-lg font-semibold">${hasMistakesProgress ? '間違えた問題 (続き)' : '間違えた問題'}</span>
+                </div>
+                <span class="text-xs md:text-sm mt-1 opacity-80">${hasMistakesProgress ? `${pMistakes.currentIndex}/${pMistakes.order.length}問` : `${state.mistakes.length}問`}</span>
+              </button>
+              ${hasMistakesProgress ? `<button onclick="startQuiz('mistakes', false)" class="mt-2 text-xs md:text-sm text-slate-500 hover:text-orange-600 underline transition-colors text-center">新しく間違えたリストでやり直す</button>` : ''}
+            </div>
+
+            <div class="col-span-2 pt-4 md:pt-6 pb-1 md:pb-2 border-b border-slate-200">
+              <h2 class="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wider text-center">Lesson別に出題</h2>
+            </div>
+            
+            ${stepsHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderQuizHtml() {
+      const currentQ = state.questions[state.currentIndex];
+      const typeLabel = getQuestionTypeLabel(currentQ.t);
+      const concept = conceptGroups[currentQ.g] || { title: "解説", e: "解説がありません", m: "作問者の意図がありません" };
+      
+      let inputAreaHtml = '';
+
+      if (currentQ.t === 'c' || currentQ.t === 'e') {
+        let choicesHtml = '';
+        currentQ.c.forEach((choiceText, idx) => {
+          let btnStyle = "bg-white border-2 border-slate-200 text-slate-700 hover:border-blue-400 hover:bg-blue-50";
+          if (state.isAnswered) {
+            if ((idx + 1) === currentQ.a) {
+              btnStyle = "bg-green-100 border-2 border-green-500 text-green-800 font-bold z-10 shadow-md"; 
+            } else if (state.selectedAnswer === (idx + 1)) {
+              btnStyle = "bg-red-50 border-2 border-red-300 text-red-600 line-through opacity-70"; 
+            } else {
+              btnStyle = "bg-slate-50 border-2 border-slate-200 text-slate-400 opacity-50"; 
+            }
+          }
+          choicesHtml += `
+            <button ${state.isAnswered ? 'disabled' : ''} onclick="handleChoiceSubmit(${idx})" class="p-3 md:p-4 rounded-xl text-left transition-all duration-200 ${btnStyle}">
+              <span class="text-sm md:text-base font-medium">${choiceText}</span>
+            </button>
+          `;
+        });
+        inputAreaHtml = `<div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">${choicesHtml}</div>`;
+      } 
+      else if (currentQ.t === 'o') {
+        let constructedHtml = state.constructedAnswer.split(' ').filter(w=>w).map(w => 
+          `<span class="px-3 py-1 bg-white border border-slate-200 shadow-sm rounded-lg text-slate-800 font-medium">${w}</span>`
+        ).join('');
+        if (!state.constructedAnswer) constructedHtml = `<span class="text-slate-400 text-sm">単語をタップして組み立ててください</span>`;
+
+        let availableHtml = '';
+        if (!state.isAnswered) {
+          availableHtml = state.availableWords.map((w, i) => 
+            `<button onclick="handleWordClick(${i})" class="px-3 py-1.5 bg-white border border-slate-300 hover:border-blue-500 hover:text-blue-600 rounded-lg shadow-sm transition-colors font-medium text-slate-700 text-sm md:text-base">${w}</button>`
+          ).join('');
+        }
+
+        inputAreaHtml = `
+          <div class="space-y-4">
+            <div class="min-h-[50px] p-3 bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl flex flex-wrap items-center gap-2">
+              ${constructedHtml}
+            </div>
+            ${!state.isAnswered ? `<div class="flex flex-wrap gap-2">${availableHtml}</div>` : ''}
+            ${!state.isAnswered ? `
+            <div class="flex space-x-3">
+              <button onclick="handleClearConstructed()" class="px-4 py-2 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg font-medium transition-colors text-sm">やり直す</button>
+              <button onclick="handleTextSubmit(state.constructedAnswer)" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition-colors flex-grow">解答する</button>
+            </div>
+            ` : ''}
+          </div>
+        `;
+      } 
+      else if (currentQ.t === 'f') {
+        const val = state.constructedAnswer.replace(/"/g, '&quot;');
+        inputAreaHtml = `
+          <div class="space-y-3">
+            <input type="text" id="fillInput" value="${val}" ${state.isAnswered ? 'disabled' : ''} 
+              oninput="handleInputChange(this.value)" 
+              onkeydown="handleInputKeydown(event, this.value)"
+              placeholder="解答を入力してください" 
+              class="w-full p-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-0 outline-none text-base md:text-lg text-slate-800 bg-white" />
+            ${!state.isAnswered ? `<button onclick="handleTextSubmit(document.getElementById('fillInput').value)" class="w-full p-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors">解答する</button>` : ''}
+          </div>
+        `;
+      }
+
+      let feedbackHtml = '';
+      if (state.isAnswered) {
+        const resultIcon = state.isCorrect 
+          ? `<div class="flex items-center text-green-600"><i data-lucide="check-circle-2" class="w-6 h-6 mr-2"></i><span class="text-lg font-bold">正解！</span></div>`
+          : `<div class="flex items-center text-red-600"><i data-lucide="x-circle" class="w-6 h-6 mr-2"></i><span class="text-lg font-bold">不正解...</span></div>`;
+        
+        let correctAnsBox = '';
+        if (currentQ.t === 'o' || currentQ.t === 'f') {
+          correctAnsBox = `
+            <div class="mb-3 bg-white p-2 rounded-lg border border-slate-100">
+              <span class="text-xs text-slate-500 block mb-1">正解:</span>
+              <span class="font-mono text-sm md:text-base text-slate-800 font-bold">${currentQ.a}</span>
+            </div>
+          `;
+        }
+
+        const btnText = (state.currentIndex + 1 < state.questions.length) ? '次の問題へ' : '結果を見る';
+
+        feedbackHtml = `
+          <div class="mt-4 slide-in">
+            <div class="p-4 md:p-5 rounded-2xl border ${state.isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+              <div class="flex items-center justify-between mb-3">
+                ${resultIcon}
+              </div>
+              
+              ${correctAnsBox}
+
+              <!-- 丁寧なポイント解説 (グループ共通) -->
+              <div class="bg-white rounded-xl p-3 md:p-4 border border-blue-100 shadow-sm mb-4">
+                <div class="flex items-center space-x-2 mb-2">
+                  <div class="p-1 md:p-1.5 bg-blue-100 text-blue-700 rounded-md"><i data-lucide="lightbulb" class="w-4 h-4 md:w-5 md:h-5"></i></div>
+                  <h4 class="text-sm md:text-base font-bold text-blue-800">${concept.title}</h4>
+                </div>
+                <p class="text-xs md:text-sm text-slate-700 leading-relaxed font-medium">${concept.e}</p>
+              </div>
+
+              <!-- 個別解説 -->
+              <div class="px-2 py-2 border-l-4 border-slate-300 mb-4 bg-slate-50 rounded-r-lg">
+                <span class="text-xs text-slate-500 font-bold mb-1 block">【この問題の解説】</span>
+                <p class="text-xs md:text-sm text-slate-700 whitespace-pre-line leading-relaxed">${currentQ.e}</p>
+              </div>
+
+              <!-- 作問者の意図 -->
+              <div class="flex items-start space-x-2 px-2 mt-2">
+                <i data-lucide="brain-circuit" class="w-4 h-4 text-orange-500 mt-0.5"></i>
+                <div>
+                  <h4 class="text-xs font-bold text-orange-700 mb-0.5">作問者の意図</h4>
+                  <p class="text-xs text-slate-600 leading-relaxed">${concept.m}</p>
+                </div>
+              </div>
+
+              <div class="mt-5 flex justify-end">
+                <button onclick="goNext()" class="flex items-center px-6 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow-md transition-transform transform hover:translate-x-1">
+                  ${btnText}
+                  <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="flex flex-col h-full p-2 md:p-4 max-w-4xl mx-auto w-full fade-in">
+          <div class="flex items-center justify-between mb-3 text-xs md:text-sm font-medium text-slate-500 bg-white p-3 rounded-xl shadow-sm border border-slate-100">
+            <div class="flex items-center space-x-3 md:space-x-4">
+              <button onclick="goToMenu()" class="flex items-center text-slate-400 hover:text-slate-600 transition-colors" title="メニューへ戻る">
+                <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i> 中断
+              </button>
+              <span class="flex items-center pl-3 md:pl-4 border-l border-slate-200"><i data-lucide="book-open" class="w-4 h-4 mr-1 md:mr-2 text-blue-500"></i> ${currentQ.s}</span>
+            </div>
+            <span>Question ${state.currentIndex + 1} / ${state.questions.length}</span>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6 mb-4 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+            <div class="mb-3">
+              <span class="inline-block px-2 py-1 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold rounded-lg shadow-sm">
+                ${typeLabel}
+              </span>
+            </div>
+            <p class="text-base md:text-xl font-medium text-slate-800 leading-relaxed whitespace-pre-line">${currentQ.q}</p>
+          </div>
+
+          <div class="flex-grow">
+            ${inputAreaHtml}
+          </div>
+
+          ${feedbackHtml}
+        </div>
+      `;
+    }
+
+    function renderResultHtml() {
+      const accuracy = Math.round((state.score / state.questions.length) * 100) || 0;
+      const strokeColor = accuracy >= 80 ? '#22c55e' : accuracy >= 60 ? '#f59e0b' : '#ef4444';
+      const circumference = 2 * Math.PI * 45;
+      const offset = circumference * (1 - accuracy / 100);
+
+      let mistakesBtnHtml = '';
+      if (state.mistakes.length > 0) {
+        mistakesBtnHtml = `
+          <button onclick="startQuiz('mistakes')" class="flex-1 flex items-center justify-center py-3 md:py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-md transition-colors text-sm md:text-base">
+            <i data-lucide="refresh-cw" class="w-4 h-4 md:w-5 md:h-5 mr-2"></i> 間違えた問題
+          </button>
+        `;
+      }
+
+      return `
+        <div class="flex flex-col items-center justify-center h-full p-4 md:p-8 space-y-6 md:space-y-8 fade-in mt-6 md:mt-12">
+          <div class="text-center space-y-2">
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-800">学習完了！</h2>
+            <p class="text-sm md:text-base text-slate-500">今回のスコア</p>
+          </div>
+
+          <div class="relative flex items-center justify-center w-40 h-40 md:w-48 md:h-48 bg-white rounded-full shadow-xl border-4 border-slate-50">
+            <svg class="absolute w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#e2e8f0" stroke-width="8" />
+              <circle cx="50" cy="50" r="45" fill="none" stroke="${strokeColor}" stroke-width="8" 
+                stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" 
+                class="transition-all duration-1000 ease-out" />
+            </svg>
+            <div class="text-center">
+              <span class="text-4xl md:text-5xl font-black text-slate-800">${accuracy}</span>
+              <span class="text-lg md:text-xl font-bold text-slate-400">%</span>
+              <div class="text-xs md:text-sm font-medium text-slate-500 mt-1">${state.score} / ${state.questions.length} 正解</div>
+            </div>
+          </div>
+
+          <div class="flex space-x-3 md:space-x-4 pt-4 md:pt-8 w-full max-w-md">
+            <button onclick="goToMenu()" class="flex-1 flex items-center justify-center py-3 md:py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors text-sm md:text-base">
+              <i data-lucide="list-checks" class="w-4 h-4 md:w-5 md:h-5 mr-2"></i> メニュー
+            </button>
+            ${mistakesBtnHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    function render() {
+      const app = document.getElementById('app');
+      let html = '';
+      if (state.currentMode === 'menu') html = renderMenuHtml();
+      else if (state.currentMode === 'quiz') html = renderQuizHtml();
+      else if (state.currentMode === 'result') html = renderResultHtml();
+
+      app.innerHTML = html;
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    document.addEventListener("DOMContentLoaded", render);
+
+  </script>
+</body>
+</html>
